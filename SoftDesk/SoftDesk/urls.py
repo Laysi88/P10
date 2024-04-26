@@ -19,6 +19,8 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 from CustomUser.views import CustomUserCreate
+from API.views import ProjectViewSet, ContributorViewSet
+
 
 # API URL
 router = routers.DefaultRouter()
@@ -28,4 +30,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api-auth/", include("rest_framework.urls")),
     path("api/users/", CustomUserCreate.as_view(), name="user_create"),
+    path("api/projects/", ProjectViewSet.as_view({"get": "list", "post": "create"}), name="project_list"),
+    path("api/contributors/", ContributorViewSet.as_view({"get": "list", "post": "create"}), name="contributor_list"),
 ]
