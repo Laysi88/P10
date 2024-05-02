@@ -31,5 +31,10 @@ urlpatterns = [
     path("api-auth/", include("rest_framework.urls")),
     path("api/users/", CustomUserCreate.as_view(), name="user_create"),
     path("api/projects/", ProjectViewSet.as_view({"get": "list", "post": "create"}), name="project_list"),
+    path(
+        "api/projects/<int:pk>/",
+        ProjectViewSet.as_view({"get": "retrieve", "put": "update", "delete": "destroy"}),
+        name="project_detail",
+    ),
     path("api/contributors/", ContributorViewSet.as_view({"get": "list", "post": "create"}), name="contributor_list"),
 ]
