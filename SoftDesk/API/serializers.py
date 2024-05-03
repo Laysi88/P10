@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from CustomUser.models import CustomUser
-from API.models import Project, Contributor
+from API.models import Project, Contributor, Issues, Comments
 from CustomUser.models import CustomUser
 
 
 class ContributorSerializer(serializers.ModelSerializer):
+    project = serializers.StringRelatedField(many=True, read_only=True)
+
     class Meta:
         model = Contributor
         fields = ["id", "user", "project"]
@@ -12,6 +14,7 @@ class ContributorSerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     contributors = serializers.PrimaryKeyRelatedField(many=True, queryset=CustomUser.objects.all())
+    author = serializers.StringRelatedField()
 
     class Meta:
         model = Project
@@ -46,7 +49,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             # Mettre à jour le projet avec les données validées
             instance.name = validated_data.get("name", instance.name)
             instance.description = validated_data.get("description", instance.description)
-            instance.start_date = validated_data.get("start_date", instance.start_date)
             instance.type = validated_data.get("type", instance.type)
             # Récupérer les contributeurs fournis dans les données validées
             contributors_data = validated_data.pop("contributors", [])
@@ -62,3 +64,37 @@ class ProjectSerializer(serializers.ModelSerializer):
             return instance
         else:
             raise serializers.ValidationError("Vous n'êtes pas autorisé à modifier ce projet.")
+
+
+class IssuesSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField()
+    project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())
+
+    class Meta:
+        model = Issues
+        fields = [
+            "id",
+            "project",
+            "title",
+            "description",
+            "start_date",
+            "author",
+            "assigned",
+            "priority",
+            "nature",
+            "status",
+        ]
+        read_only_fields = ["author"]
+
+    def get_fields(self):
+        # Récupérer les champs du serializer
+        fields = super().get_fields()
+        # Récupérer l'utilisateur actuel à partir du contexte
+        user = self.context["request"].user
+        # Vérifier si l'utilisateur est authentifié
+        if user.is_authenticated:
+            # Récupérer l'instance Contributor correspondante à l'utilisateur actuel
+            contributor = Contributor.objects.get(user=user)
+            # Filtrer la queryset des projets pour n'inclure que ceux auxquels le contributeur actuel est associé
+            fields["project"].queryset = Project.objects.filter(contributors=contributor)
+        return fields
