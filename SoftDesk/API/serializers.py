@@ -68,7 +68,6 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 class IssuesSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField()
-    project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())
 
     class Meta:
         model = Issues
@@ -87,14 +86,17 @@ class IssuesSerializer(serializers.ModelSerializer):
         read_only_fields = ["author"]
 
     def get_fields(self):
-        # Récupérer les champs du serializer
         fields = super().get_fields()
-        # Récupérer l'utilisateur actuel à partir du contexte
         user = self.context["request"].user
-        # Vérifier si l'utilisateur est authentifié
+        project_id = self.context["view"].kwargs.get("pk")
         if user.is_authenticated:
-            # Récupérer l'instance Contributor correspondante à l'utilisateur actuel
-            contributor = Contributor.objects.get(user=user)
-            # Filtrer la queryset des projets pour n'inclure que ceux auxquels le contributeur actuel est associé
-            fields["project"].queryset = Project.objects.filter(contributors=contributor)
+            project = Project.objects.get(id=project_id)
+            contributors = project.contributors.all()
+            fields["assigned"].queryset = contributors
+            fields["project"].queryset = Project.objects.filter(id=project_id)
         return fields
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        validated_data["author"] = user
+        return super().create(validated_data)

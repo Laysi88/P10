@@ -37,5 +37,9 @@ urlpatterns = [
         name="project_detail",
     ),
     path("api/contributors/", ContributorViewSet.as_view({"get": "list", "post": "create"}), name="contributor_list"),
-    path("api/issues/", IssuesViewSet.as_view({"get": "list", "post": "create"}), name="issues_list"),
+    path(
+        "api/projects/<int:pk>/issues/",
+        IssuesViewSet.as_view({"get": "list", "post": "create"}),
+        name="issues_by_project",
+    ),
 ]
