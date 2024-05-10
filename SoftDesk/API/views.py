@@ -1,6 +1,12 @@
 from rest_framework import viewsets
-from .models import Project, Contributor, Issues
-from .serializers import ProjectSerializer, ContributorSerializer, IssuesSerializerCreate, IssuesSerializerUpdate
+from .models import Project, Contributor, Issues, Comments
+from .serializers import (
+    ProjectSerializer,
+    ContributorSerializer,
+    IssuesSerializerCreate,
+    IssuesSerializerUpdate,
+    CommentsSerializerCreate,
+)
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -32,3 +38,17 @@ class IssuesCreateViewSet(viewsets.ModelViewSet):
 class IssuesUpdateViewSet(viewsets.ModelViewSet):
     queryset = Issues.objects.all()
     serializer_class = IssuesSerializerUpdate
+
+
+class CommentsCreateViewSet(viewsets.ModelViewSet):
+    queryset = Comments.objects.all()
+    serializer_class = CommentsSerializerCreate
+
+    def get_queryset(self):
+        issue_id = self.kwargs.get("pk")
+        return Comments.objects.filter(issue_id=issue_id)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
