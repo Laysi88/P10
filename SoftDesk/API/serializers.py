@@ -180,3 +180,35 @@ class CommentsSerializerCreate(serializers.ModelSerializer):
         contributor = Contributor.objects.get(user=user)
         validated_data["author"] = contributor
         return super().create(validated_data)
+
+
+class CommentsSerializerUpdate(serializers.ModelSerializer):
+    author = serializers.StringRelatedField()
+    link = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comments
+        fields = ["id", "issue", "author", "description", "link", "uuid", "start_date"]
+        read_only_fields = ["start_date", "uuid", "issue", "link"]
+
+    def get_fields(self):
+        fields = super().get_fields()
+        comments_id = self.context["view"].kwargs.get("pk")
+        if self.context["request"].user.is_authenticated:
+            comment = Comments.objects.get(id=comments_id)
+            fields["issue"].queryset = Issues.objects.filter(id=comment.issue.id)
+        return fields
+
+    def get_link(self, obj):
+        if obj.issue:
+            return f"/api/issues/{obj.issue_id}/"
+        return None
+
+    def update(self, instance, validated_data):
+        user = self.context["request"].user
+        if user == instance.author.user:
+            instance.description = validated_data.get("description", instance.description)
+            instance.save()
+            return instance
+        else:
+            raise serializers.ValidationError("Vous n'êtes pas autorisé à modifier cet élément.")

@@ -25,6 +25,7 @@ from API.views import (
     IssuesCreateViewSet,
     IssuesUpdateViewSet,
     CommentsCreateViewSet,
+    CommentsUpdateViewSet,
 )
 
 
@@ -57,5 +58,10 @@ urlpatterns = [
         "api/issues/<int:pk>/comments/",
         CommentsCreateViewSet.as_view({"get": "list", "post": "create"}),
         name="comments",
+    ),
+    path(
+        "api/comments/<int:pk>/",
+        CommentsUpdateViewSet.as_view({"get": "retrieve", "put": "update", "delete": "destroy"}),
+        name="comments_detail",
     ),
 ]
