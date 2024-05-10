@@ -66,7 +66,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Vous n'êtes pas autorisé à modifier ce projet.")
 
 
-class IssuesSerializer(serializers.ModelSerializer):
+class IssuesSerializerCreate(serializers.ModelSerializer):
     author = serializers.StringRelatedField()
 
     class Meta:
@@ -100,3 +100,49 @@ class IssuesSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         validated_data["author"] = user
         return super().create(validated_data)
+
+
+class IssuesSerializerUpdate(serializers.ModelSerializer):
+    author = serializers.StringRelatedField()
+
+    class Meta:
+        model = Issues
+        fields = [
+            "id",
+            "project",
+            "title",
+            "description",
+            "start_date",
+            "author",
+            "assigned",
+            "priority",
+            "nature",
+            "status",
+        ]
+        read_only_fields = ["author"]
+
+    def get_fields(self):
+        fields = super().get_fields()
+        user = self.context["request"].user
+        issue_id = self.context["view"].kwargs.get("pk")
+        if user.is_authenticated:
+            issue = Issues.objects.get(id=issue_id)
+            project = issue.project
+            contributors = project.contributors.all()
+            fields["assigned"].queryset = contributors
+            fields["project"].queryset = Project.objects.filter(id=project.id)
+        return fields
+
+    def update(self, instance, validated_data):
+        user = self.context["request"].user
+        if user == instance.author:
+            instance.title = validated_data.get("title", instance.title)
+            instance.description = validated_data.get("description", instance.description)
+            instance.assigned = validated_data.get("assigned", instance.assigned)
+            instance.priority = validated_data.get("priority", instance.priority)
+            instance.nature = validated_data.get("nature", instance.nature)
+            instance.status = validated_data.get("status", instance.status)
+            instance.save()
+            return instance
+        else:
+            raise serializers.ValidationError("Vous n'êtes pas autorisé à modifier cet élément.")

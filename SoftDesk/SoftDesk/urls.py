@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 from CustomUser.views import CustomUserCreate
-from API.views import ProjectViewSet, ContributorViewSet, IssuesViewSet
+from API.views import ProjectViewSet, ContributorViewSet, IssuesCreateViewSet, IssuesUpdateViewSet
 
 
 # API URL
@@ -39,7 +39,12 @@ urlpatterns = [
     path("api/contributors/", ContributorViewSet.as_view({"get": "list", "post": "create"}), name="contributor_list"),
     path(
         "api/projects/<int:pk>/issues/",
-        IssuesViewSet.as_view({"get": "list", "post": "create"}),
-        name="issues_by_project",
+        IssuesCreateViewSet.as_view({"get": "list", "post": "create"}),
+        name="issues",
+    ),
+    path(
+        "api/issues/<int:pk>/",
+        IssuesUpdateViewSet.as_view({"get": "retrieve", "put": "update", "delete": "destroy"}),
+        name="issues_detail",
     ),
 ]

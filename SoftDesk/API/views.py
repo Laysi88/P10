@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from .models import Project, Contributor, Issues
-from .serializers import ProjectSerializer, ContributorSerializer, IssuesSerializer
+from .serializers import ProjectSerializer, ContributorSerializer, IssuesSerializerCreate, IssuesSerializerUpdate
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -15,9 +15,9 @@ class ContributorViewSet(viewsets.ModelViewSet):
     serializer_class = ContributorSerializer
 
 
-class IssuesViewSet(viewsets.ModelViewSet):
+class IssuesCreateViewSet(viewsets.ModelViewSet):
     queryset = Issues.objects.all()
-    serializer_class = IssuesSerializer
+    serializer_class = IssuesSerializerCreate
 
     def get_queryset(self):
         project_id = self.kwargs.get("pk")
@@ -27,3 +27,8 @@ class IssuesViewSet(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class IssuesUpdateViewSet(viewsets.ModelViewSet):
+    queryset = Issues.objects.all()
+    serializer_class = IssuesSerializerUpdate
