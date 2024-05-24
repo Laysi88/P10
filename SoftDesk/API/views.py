@@ -10,11 +10,13 @@ from .serializers import (
 )
 from rest_framework.response import Response
 from rest_framework import status
+from API.permissions import ProjectPermission
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
+    permission_classes = [ProjectPermission]
 
 
 class ContributorViewSet(viewsets.ModelViewSet):
