@@ -10,7 +10,7 @@ from .serializers import (
 )
 from rest_framework.response import Response
 from rest_framework import status
-from API.permissions import ProjectPermission
+from API.permissions import ProjectPermission, IssuePermission
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -27,6 +27,7 @@ class ContributorViewSet(viewsets.ModelViewSet):
 class IssuesCreateViewSet(viewsets.ModelViewSet):
     queryset = Issues.objects.all()
     serializer_class = IssuesSerializerCreate
+    permission_classes = [IssuePermission]
 
     def get_queryset(self):
         project_id = self.kwargs.get("pk")

@@ -1,5 +1,5 @@
 from rest_framework.permissions import BasePermission
-from API.models import Project, Contributor, Issues, Comments
+from API.models import Contributor, Issues, Comments
 
 
 class ProjectPermission(BasePermission):
@@ -14,3 +14,12 @@ class ProjectPermission(BasePermission):
             return bool(obj.author == request.user)
         else:
             return False
+
+
+class IssuePermission(BasePermission):
+    message = "Vous n'avez pas les droits pour effectuer cette action"
+
+    def has_permission(self, request, view):
+        # Donner l'accès à tous les utilisateurs authentifiés ET aux contributeurs du projet
+        if request.method == "POST":
+            return bool(request.user and request.user.is_authenticated and request.user.is_contributor)
