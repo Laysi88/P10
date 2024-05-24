@@ -8,3 +8,9 @@ class ProjectPermission(BasePermission):
     def has_permission(self, request, view):
         # Donner l'accès à tous les utilisateurs authentifiés
         return bool(request.user and request.user.is_authenticated)
+
+    def has_object_permission(self, request, view, obj):
+        if request.method == "PUT" or request.method == "DELETE":
+            return bool(obj.author == request.user)
+        else:
+            return False

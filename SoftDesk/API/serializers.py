@@ -44,26 +44,23 @@ class ProjectSerializer(serializers.ModelSerializer):
         return project
 
     def update(self, instance, validated_data):
-        # Vérification que l'utilisateur actuel est l'auteur du projet
-        if self.context["request"].user == instance.author:
-            # Mettre à jour le projet avec les données validées
-            instance.name = validated_data.get("name", instance.name)
-            instance.description = validated_data.get("description", instance.description)
-            instance.type = validated_data.get("type", instance.type)
-            # Récupérer les contributeurs fournis dans les données validées
-            contributors_data = validated_data.pop("contributors", [])
-            # Ajouter des contributeurs au projet s'ils sont fournis
-            for contributor_data in contributors_data:
-                # Récupérer ou créer l'utilisateur à partir des données du contributeur
-                contributor_user, created = CustomUser.objects.get_or_create(username=contributor_data.username)
-                # Récupérer ou créer le Contributor associé à l'utilisateur
-                contributor, created = Contributor.objects.get_or_create(user=contributor_user)
-                # Ajouter le projet au Contributor
-                contributor.project.add(instance)
-            instance.save()
-            return instance
-        else:
-            raise serializers.ValidationError("Vous n'êtes pas autorisé à modifier ce projet.")
+
+        # Mettre à jour le projet avec les données validées
+        instance.name = validated_data.get("name", instance.name)
+        instance.description = validated_data.get("description", instance.description)
+        instance.type = validated_data.get("type", instance.type)
+        # Récupérer les contributeurs fournis dans les données validées
+        contributors_data = validated_data.pop("contributors", [])
+        # Ajouter des contributeurs au projet s'ils sont fournis
+        for contributor_data in contributors_data:
+            # Récupérer ou créer l'utilisateur à partir des données du contributeur
+            contributor_user, created = CustomUser.objects.get_or_create(username=contributor_data.username)
+            # Récupérer ou créer le Contributor associé à l'utilisateur
+            contributor, created = Contributor.objects.get_or_create(user=contributor_user)
+            # Ajouter le projet au Contributor
+            contributor.project.add(instance)
+        instance.save()
+        return instance
 
 
 class IssuesSerializerCreate(serializers.ModelSerializer):
