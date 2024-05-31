@@ -30,3 +30,13 @@ class IssuePermissionCreate(BasePermission):
         if request.user and request.user.is_authenticated:
             return request.user == project.author or project.contributors.filter(id=request.user.id).exists()
         return False
+
+
+class IssuePermissionUpdate(BasePermission):
+    message = "Vous n'avez pas les droits pour effectuer cette action"
+
+    def has_permission(self, request, view):
+        issue = get_object_or_404(Issues, id=view.kwargs.get("pk"))
+        if request.user and request.user.is_authenticated:
+            return request.user == issue.author or issue.assigned.user == request.user
+        return False

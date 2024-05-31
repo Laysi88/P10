@@ -10,7 +10,7 @@ from .serializers import (
 )
 from rest_framework.response import Response
 from rest_framework import status
-from API.permissions import ProjectPermission, IssuePermissionCreate
+from API.permissions import ProjectPermission, IssuePermissionCreate, IssuePermissionUpdate
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -37,6 +37,7 @@ class IssuesCreateViewSet(viewsets.ModelViewSet):
 class IssuesUpdateViewSet(viewsets.ModelViewSet):
     queryset = Issues.objects.all()
     serializer_class = IssuesSerializerUpdate
+    permission_classes = [IssuePermissionUpdate]
 
 
 class CommentsCreateViewSet(viewsets.ModelViewSet):
