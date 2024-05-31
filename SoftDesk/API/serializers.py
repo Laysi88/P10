@@ -2,6 +2,7 @@ from rest_framework import serializers
 from CustomUser.models import CustomUser
 from API.models import Project, Contributor, Issues, Comments
 from CustomUser.models import CustomUser
+from django.shortcuts import get_object_or_404
 
 
 class ContributorSerializer(serializers.ModelSerializer):
@@ -87,7 +88,7 @@ class IssuesSerializerCreate(serializers.ModelSerializer):
         user = self.context["request"].user
         project_id = self.context["view"].kwargs.get("pk")
         if user.is_authenticated:
-            project = Project.objects.get(id=project_id)
+            project = get_object_or_404(Project, id=project_id)
             contributors = project.contributors.all()
             fields["assigned"].queryset = contributors
             fields["project"].queryset = Project.objects.filter(id=project_id)

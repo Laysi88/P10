@@ -1,5 +1,6 @@
 from rest_framework.permissions import BasePermission
 from API.models import Contributor, Issues, Comments, Project
+from django.shortcuts import get_object_or_404
 
 
 class ProjectPermission(BasePermission):
@@ -24,15 +25,8 @@ class IssuePermissionCreate(BasePermission):
     message = "Vous n'avez pas les droits pour effectuer cette action"
 
     def has_permission(self, request, view):
-        try:
-            project = Project.objects.get(id=view.kwargs.get("pk"))
-        except Project.DoesNotExist:
-            return False
-
-        contributors = project.contributors.all()
+        project = get_object_or_404(Project, id=view.kwargs.get("pk"))
 
         if request.user and request.user.is_authenticated:
-            for contributor in contributors:
-                if request.user.id == contributor.user.id or project.author.id == request.user.id:
-                    return True
+            return request.user == project.author or project.contributors.filter(id=request.user.id).exists()
         return False

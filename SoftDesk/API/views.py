@@ -33,11 +33,6 @@ class IssuesCreateViewSet(viewsets.ModelViewSet):
         project_id = self.kwargs.get("pk")
         return Issues.objects.filter(project_id=project_id)
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
 
 class IssuesUpdateViewSet(viewsets.ModelViewSet):
     queryset = Issues.objects.all()
