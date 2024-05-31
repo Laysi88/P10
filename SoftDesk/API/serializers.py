@@ -89,8 +89,7 @@ class IssuesSerializerCreate(serializers.ModelSerializer):
         project_id = self.context["view"].kwargs.get("pk")
         if user.is_authenticated:
             project = get_object_or_404(Project, id=project_id)
-            contributors = project.contributors.all()
-            fields["assigned"].queryset = contributors
+            fields["assigned"].queryset = project.contributors.all()
             fields["project"].queryset = Project.objects.filter(id=project_id)
         return fields
 
