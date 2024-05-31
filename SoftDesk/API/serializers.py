@@ -85,12 +85,10 @@ class IssuesSerializerCreate(serializers.ModelSerializer):
 
     def get_fields(self):
         fields = super().get_fields()
-        user = self.context["request"].user
         project_id = self.context["view"].kwargs.get("pk")
-        if user.is_authenticated:
-            project = get_object_or_404(Project, id=project_id)
-            fields["assigned"].queryset = project.contributors.all()
-            fields["project"].queryset = Project.objects.filter(id=project_id)
+        project = get_object_or_404(Project, id=project_id)
+        fields["assigned"].queryset = project.contributors.all()
+        fields["project"].queryset = Project.objects.filter(id=project_id)
         return fields
 
     def create(self, validated_data):
