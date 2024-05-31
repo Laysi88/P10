@@ -12,6 +12,10 @@ class ProjectPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method == "PUT" or request.method == "DELETE":
             return bool(obj.author == request.user)
+        elif request.method == "GET":
+            return bool(request.user and request.user.is_authenticated)
+        elif request.method == "POST":
+            return True
         else:
             return False
 
@@ -23,3 +27,5 @@ class IssuePermission(BasePermission):
         # Donner l'accès à tous les utilisateurs authentifiés ET aux contributeurs du projet
         if request.method == "POST":
             return bool(request.user and request.user.is_authenticated and request.user.is_contributor)
+        if request.method == "GET":
+            return bool(request.user and request.user.is_authenticated)
