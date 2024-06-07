@@ -22,18 +22,18 @@ class ProjectPermission(BasePermission):
 
 
 class IssuePermissionCreate(BasePermission):
-    message = "Vous n'avez pas les droits pour effectuer cette action"
+    message = "Vous n'avez pas les droits pour effectuer cette action "
 
     def has_permission(self, request, view):
         project = get_object_or_404(Project, id=view.kwargs.get("pk"))
 
         if request.user and request.user.is_authenticated:
-            return request.user == project.author or project.contributors.filter(id=request.user.id).exists()
+            return request.user == project.author or project.contributors.filter(user=request.user).exists()
         return False
 
 
 class IssuePermissionUpdate(BasePermission):
-    message = "Vous n'avez pas les droits pour effectuer cette action"
+    message = "Vous n'avez pas les droits pour effectuer cette action "
 
     def has_object_permission(self, request, view, obj):
         issue = get_object_or_404(Issues, id=view.kwargs.get("pk"))
@@ -47,11 +47,14 @@ class IssuePermissionUpdate(BasePermission):
 
 
 class CommentPermissionCreate(BasePermission):
-    message = "Vous n'avez pas les droits pour effectuer cette action"
+    message = "Vous n'avez pas les droits pour effectuer cette action."
 
     def has_permission(self, request, view):
         issue = get_object_or_404(Issues, id=view.kwargs.get("pk"))
-
         if request.user and request.user.is_authenticated:
-            return request.user == issue.author or issue.assigned.user == request.user
+            return (
+                request.user == issue.author
+                or (issue.assigned and issue.assigned.user == request.user)
+                or issue.project.contributors.filter(user=request.user).exists()
+            )
         return False
