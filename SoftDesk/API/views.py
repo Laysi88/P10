@@ -10,7 +10,7 @@ from .serializers import (
 )
 from rest_framework.response import Response
 from rest_framework import status
-from API.permissions import ProjectPermission, IssuePermissionCreate, IssuePermissionUpdate
+from API.permissions import ProjectPermission, IssuePermissionCreate, IssuePermissionUpdate, CommentPermissionCreate
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -43,15 +43,11 @@ class IssuesUpdateViewSet(viewsets.ModelViewSet):
 class CommentsCreateViewSet(viewsets.ModelViewSet):
     queryset = Comments.objects.all()
     serializer_class = CommentsSerializerCreate
+    permission_classes = [CommentPermissionCreate]
 
     def get_queryset(self):
         issue_id = self.kwargs.get("pk")
         return Comments.objects.filter(issue_id=issue_id)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
 
 
 class CommentsUpdateViewSet(viewsets.ModelViewSet):
