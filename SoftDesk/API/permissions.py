@@ -35,8 +35,12 @@ class IssuePermissionCreate(BasePermission):
 class IssuePermissionUpdate(BasePermission):
     message = "Vous n'avez pas les droits pour effectuer cette action"
 
-    def has_permission(self, request, view):
+    def has_object_permission(self, request, view, obj):
         issue = get_object_or_404(Issues, id=view.kwargs.get("pk"))
-        if request.user and request.user.is_authenticated:
-            return request.user == issue.author or issue.assigned.user == request.user
-        return False
+        if request.method == "GET":
+            if request.user and request.user.is_authenticated:
+                return request.user == issue.author or issue.assigned.user == request.user
+        if request.method == "PUT" or request.method == "DELETE":
+            return bool(obj.author == request.user)
+        else:
+            return False
