@@ -39,7 +39,7 @@ class IssuePermissionUpdate(BasePermission):
         issue = get_object_or_404(Issues, id=view.kwargs.get("pk"))
         if request.method == "GET":
             if request.user and request.user.is_authenticated:
-                return request.user == issue.author or issue.assigned.user == request.user
+                return request.user == issue.author or issue.project.contributors.filter(user=request.user).exists()
         if request.method == "PUT" or request.method == "DELETE":
             return bool(obj.author == request.user)
         else:
@@ -58,3 +58,20 @@ class CommentPermissionCreate(BasePermission):
                 or issue.project.contributors.filter(user=request.user).exists()
             )
         return False
+
+
+class CommentPermissionUpdate(BasePermission):
+    message = "Vous n'avez pas les droits pour effectuer cette action."
+
+    def has_object_permission(self, request, view, obj):
+        comment = get_object_or_404(Comments, id=view.kwargs.get("pk"))
+        if request.method == "GET":
+            if request.user and request.user.is_authenticated:
+                return (
+                    request.user == comment.author
+                    or comment.issue.project.contributors.filter(user=request.user).exists()
+                )
+        if request.method == "PUT" or request.method == "DELETE":
+            return bool(obj.author == request.user)
+        else:
+            return False

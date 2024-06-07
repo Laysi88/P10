@@ -8,9 +8,14 @@ from .serializers import (
     CommentsSerializerCreate,
     CommentsSerializerUpdate,
 )
-from rest_framework.response import Response
-from rest_framework import status
-from API.permissions import ProjectPermission, IssuePermissionCreate, IssuePermissionUpdate, CommentPermissionCreate
+
+from API.permissions import (
+    ProjectPermission,
+    IssuePermissionCreate,
+    IssuePermissionUpdate,
+    CommentPermissionCreate,
+    CommentPermissionUpdate,
+)
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -53,3 +58,4 @@ class CommentsCreateViewSet(viewsets.ModelViewSet):
 class CommentsUpdateViewSet(viewsets.ModelViewSet):
     queryset = Comments.objects.all()
     serializer_class = CommentsSerializerUpdate
+    permission_classes = [CommentPermissionUpdate]
