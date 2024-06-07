@@ -23,42 +23,27 @@ class ProjectSerializer(serializers.ModelSerializer):
         read_only_fields = ["author"]
 
     def create(self, validated_data):
-        # Capturer l'utilisateur actuel à partir de la requête HTTP
         user = self.context["request"].user
-        # Ajouter l'utilisateur actuel comme auteur du projet
         validated_data["author"] = user
-        # Récupérer les contributeurs fournis dans les données validées
         contributors_data = validated_data.pop("contributors", [])
-        # Créer le projet avec les données validées
         project = Project.objects.create(**validated_data)
-        # Ajouter l'auteur en tant que contributeur du projet s'il n'existe pas déjà
         author_contributor, created = Contributor.objects.get_or_create(user=user)
         author_contributor.project.add(project)
-        # Ajouter des contributeurs au projet s'ils sont fournis
         for contributor_data in contributors_data:
-            # Récupérer ou créer l'utilisateur à partir des données du contributeur
             contributor_user, created = CustomUser.objects.get_or_create(username=contributor_data.username)
-            # Récupérer ou créer le Contributor associé à l'utilisateur
             contributor, created = Contributor.objects.get_or_create(user=contributor_user)
-            # Ajouter le projet au Contributor
             contributor.project.add(project)
         return project
 
     def update(self, instance, validated_data):
 
-        # Mettre à jour le projet avec les données validées
         instance.name = validated_data.get("name", instance.name)
         instance.description = validated_data.get("description", instance.description)
         instance.type = validated_data.get("type", instance.type)
-        # Récupérer les contributeurs fournis dans les données validées
         contributors_data = validated_data.pop("contributors", [])
-        # Ajouter des contributeurs au projet s'ils sont fournis
         for contributor_data in contributors_data:
-            # Récupérer ou créer l'utilisateur à partir des données du contributeur
             contributor_user, created = CustomUser.objects.get_or_create(username=contributor_data.username)
-            # Récupérer ou créer le Contributor associé à l'utilisateur
             contributor, created = Contributor.objects.get_or_create(user=contributor_user)
-            # Ajouter le projet au Contributor
             contributor.project.add(instance)
         instance.save()
         return instance
@@ -177,26 +162,12 @@ class CommentsSerializerUpdate(serializers.ModelSerializer):
     class Meta:
         model = Comments
         fields = ["id", "issue", "author", "description", "link", "uuid", "start_date"]
-        read_only_fields = ["start_date", "uuid", "issue", "link"]
-
-    def get_fields(self):
-        fields = super().get_fields()
-        comments_id = self.context["view"].kwargs.get("pk")
-        if self.context["request"].user.is_authenticated:
-            comment = Comments.objects.get(id=comments_id)
-            fields["issue"].queryset = Issues.objects.filter(id=comment.issue.id)
-        return fields
+        read_only_fields = ["start_date", "uuid", "issue", "link", "author"]
 
     def get_link(self, obj):
-        if obj.issue:
-            return f"/api/issues/{obj.issue_id}/"
-        return None
+        return f"/api/issues/{obj.issue_id}/" if obj.issue else None
 
     def update(self, instance, validated_data):
-        user = self.context["request"].user
-        if user == instance.author.user:
-            instance.description = validated_data.get("description", instance.description)
-            instance.save()
-            return instance
-        else:
-            raise serializers.ValidationError("Vous n'êtes pas autorisé à modifier cet élément.")
+        instance.description = validated_data.get("description", instance.description)
+        instance.save()
+        return instance

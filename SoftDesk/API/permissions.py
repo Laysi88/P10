@@ -7,7 +7,6 @@ class ProjectPermission(BasePermission):
     message = "Vous n'avez pas les droits pour effectuer cette action"
 
     def has_permission(self, request, view):
-        # Donner l'accès à tous les utilisateurs authentifiés
         return bool(request.user and request.user.is_authenticated)
 
     def has_object_permission(self, request, view, obj):
@@ -68,10 +67,9 @@ class CommentPermissionUpdate(BasePermission):
         if request.method == "GET":
             if request.user and request.user.is_authenticated:
                 return (
-                    request.user == comment.author
+                    request.user == comment.author.user
                     or comment.issue.project.contributors.filter(user=request.user).exists()
                 )
-        if request.method == "PUT" or request.method == "DELETE":
-            return bool(obj.author == request.user)
-        else:
-            return False
+        if request.method in ["PUT", "DELETE"]:
+            return bool(request.user == comment.author.user)
+        return False
