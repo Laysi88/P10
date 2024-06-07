@@ -144,7 +144,7 @@ class IssuesSerializerUpdate(serializers.ModelSerializer):
 
 
 class CommentsSerializerCreate(serializers.ModelSerializer):
-    author = serializers.SerializerMethodField()
+    author = serializers.PrimaryKeyRelatedField(read_only=True)
     link = serializers.SerializerMethodField()
 
     class Meta:
@@ -152,29 +152,22 @@ class CommentsSerializerCreate(serializers.ModelSerializer):
         fields = ["id", "issue", "author", "description", "link", "uuid", "start_date"]
         read_only_fields = ["start_date", "uuid"]
 
-    def get_author(self, obj):
-        request = self.context.get("request")
-        if request and request.user.is_authenticated:
-            return request.user.id
-        return None
-
     def get_link(self, obj):
         if obj.issue:
             return f"/api/issues/{obj.issue_id}/"
         return None
-
-    def get_fields(self):
-        fields = super().get_fields()
-        issue_id = self.context["view"].kwargs.get("pk")
-        if self.context["request"].user.is_authenticated:
-            fields["issue"].queryset = Issues.objects.filter(id=issue_id)
-        return fields
 
     def create(self, validated_data):
         user = self.context["request"].user
         contributor = Contributor.objects.get(user=user)
         validated_data["author"] = contributor
         return super().create(validated_data)
+
+    def get_fields(self):
+        fields = super().get_fields()
+        issue_id = self.context["view"].kwargs.get("pk")
+        fields["issue"].queryset = Issues.objects.filter(id=issue_id)
+        return fields
 
 
 class CommentsSerializerUpdate(serializers.ModelSerializer):
