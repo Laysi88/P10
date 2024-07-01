@@ -35,8 +35,8 @@ class ContributorSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    contributors = serializers.PrimaryKeyRelatedField(many=True, queryset=CustomUser.objects.all())
-    author = serializers.StringRelatedField()
+    contributors = serializers.ListField(child=serializers.CharField(), write_only=True, required=False)
+    author = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         model = Project
@@ -50,24 +50,43 @@ class ProjectSerializer(serializers.ModelSerializer):
         project = Project.objects.create(**validated_data)
         author_contributor, created = Contributor.objects.get_or_create(user=user)
         author_contributor.project.add(project)
-        for contributor_data in contributors_data:
-            contributor_user, created = CustomUser.objects.get_or_create(username=contributor_data.username)
+
+        for username in contributors_data:
+            try:
+                contributor_user = CustomUser.objects.get(username=username)
+            except CustomUser.DoesNotExist:
+                raise serializers.ValidationError(f"Utilisateur avec le nom d'utilisateur '{username}' n'existe pas.")
             contributor, created = Contributor.objects.get_or_create(user=contributor_user)
             contributor.project.add(project)
+
         return project
 
     def update(self, instance, validated_data):
-
         instance.name = validated_data.get("name", instance.name)
         instance.description = validated_data.get("description", instance.description)
+        instance.start_date = validated_data.get("start_date", instance.start_date)
         instance.type = validated_data.get("type", instance.type)
-        contributors_data = validated_data.pop("contributors", [])
-        for contributor_data in contributors_data:
-            contributor_user, created = CustomUser.objects.get_or_create(username=contributor_data.username)
-            contributor, created = Contributor.objects.get_or_create(user=contributor_user)
-            contributor.project.add(instance)
+
+        contributors_data = validated_data.get("contributors", None)
+        if contributors_data is not None:
+            for username in contributors_data:
+                try:
+                    contributor_user = CustomUser.objects.get(username=username)
+                except CustomUser.DoesNotExist:
+                    raise serializers.ValidationError(
+                        f"Utilisateur avec le nom d'utilisateur '{username}' n'existe pas."
+                    )
+                contributor, created = Contributor.objects.get_or_create(user=contributor_user)
+                contributor.project.add(instance)
+
         instance.save()
         return instance
+
+    def to_representation(self, instance):
+        """Affiche les noms d'utilisateur des contributeurs lors de la lecture."""
+        representation = super().to_representation(instance)
+        representation["contributors"] = [contributor.user.username for contributor in instance.contributors.all()]
+        return representation
 
 
 class IssuesSerializerCreate(serializers.ModelSerializer):
