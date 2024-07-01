@@ -25,3 +25,8 @@ Projet réalisé dans le cadre du parcours OpenClassrooms Développeur d'applica
 ``python manage.py migrate``
 - Démarez l'API  
 ``python manage.py runserver``
+
+## Documentation
+
+Vous pouvez utiliser les endpoints selon la documentation suivante:  
+https://documenter.getpostman.com/view/27014578/2sA3dvjY7W#auth-info-d018a7d3-2081-4747-8824-65bade07a696
