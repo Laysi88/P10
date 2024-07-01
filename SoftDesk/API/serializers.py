@@ -27,12 +27,6 @@ class ContributorSerializer(serializers.ModelSerializer):
         contributor = Contributor.objects.create(user=user, **validated_data)
         return contributor
 
-    def to_representation(self, instance):
-        """Affiche le nom d'utilisateur lors de la lecture."""
-        representation = super().to_representation(instance)
-        representation["user"] = instance.user.username
-        return representation
-
 
 class ProjectSerializer(serializers.ModelSerializer):
     contributors = serializers.ListField(child=serializers.CharField(), write_only=True, required=False)
@@ -81,12 +75,6 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
-
-    def to_representation(self, instance):
-        """Affiche les noms d'utilisateur des contributeurs lors de la lecture."""
-        representation = super().to_representation(instance)
-        representation["contributors"] = [contributor.user.username for contributor in instance.contributors.all()]
-        return representation
 
 
 class IssuesSerializerCreate(serializers.ModelSerializer):
