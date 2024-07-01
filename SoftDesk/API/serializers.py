@@ -103,29 +103,20 @@ class IssuesSerializerUpdate(serializers.ModelSerializer):
 
     def get_fields(self):
         fields = super().get_fields()
-        user = self.context["request"].user
         issue_id = self.context["view"].kwargs.get("pk")
-        if user.is_authenticated:
-            issue = Issues.objects.get(id=issue_id)
-            project = issue.project
-            contributors = project.contributors.all()
-            fields["assigned"].queryset = contributors
-            fields["project"].queryset = Project.objects.filter(id=project.id)
+        issue = get_object_or_404(Issues, id=issue_id)
+        project = issue.project
+        contributors = project.contributors.all()
+        fields["assigned"].queryset = contributors
+        fields["project"].queryset = Project.objects.filter(id=project.id)
         return fields
 
     def update(self, instance, validated_data):
-        user = self.context["request"].user
-        if user == instance.author:
-            instance.title = validated_data.get("title", instance.title)
-            instance.description = validated_data.get("description", instance.description)
-            instance.assigned = validated_data.get("assigned", instance.assigned)
-            instance.priority = validated_data.get("priority", instance.priority)
-            instance.nature = validated_data.get("nature", instance.nature)
-            instance.status = validated_data.get("status", instance.status)
-            instance.save()
-            return instance
-        else:
-            raise serializers.ValidationError("Vous n'êtes pas autorisé à modifier cet élément.")
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+
+        instance.save()
+        return instance
 
 
 class CommentsSerializerCreate(serializers.ModelSerializer):
