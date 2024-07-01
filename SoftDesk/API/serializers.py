@@ -7,16 +7,30 @@ from django.shortcuts import get_object_or_404
 
 class ContributorSerializer(serializers.ModelSerializer):
     project = serializers.StringRelatedField(many=True, read_only=True)
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    user = serializers.CharField()
 
     class Meta:
         model = Contributor
-        fields = ["id", "user", "project"]
+        fields = ["id", "user", "project", "user_id"]
+
+    def validate_user(self, value):
+        """Valide et convertit le nom d'utilisateur en une instance d'utilisateur."""
+        try:
+            user = CustomUser.objects.get(username=value)
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("Utilisateur avec ce nom d'utilisateur n'existe pas.")
+        return user
+
+    def create(self, validated_data):
+        """Crée un contributeur avec l'utilisateur validé."""
+        user = validated_data.pop("user")
+        contributor = Contributor.objects.create(user=user, **validated_data)
+        return contributor
 
     def to_representation(self, instance):
+        """Affiche le nom d'utilisateur lors de la lecture."""
         representation = super().to_representation(instance)
-        # Ajout du nom de l'utilisateur à la représentation
-        representation["user"] = instance.user.username  # ou instance.user.get_full_name()
+        representation["user"] = instance.user.username
         return representation
 
 
