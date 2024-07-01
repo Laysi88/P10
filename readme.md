@@ -1,6 +1,6 @@
 # P10 Créez une API sécurisée RESTful en utilisant Django REST #
 
-## Création d'une API sécurisée pour le se suivi de Projets/Problèmes/Commentaires##
+## Création d'une API sécurisée pour le se suivi de Projets/Problèmes/Commentaires ##
 Projet réalisé dans le cadre du parcours OpenClassrooms Développeur d'application Python
 
 ## Prérequis ##
