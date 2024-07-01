@@ -18,7 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
-from CustomUser.views import CustomUserCreate
+from CustomUser.views import CustomUserCreate, CustomUserUpdate, CustomUserDelete
 from API.views import (
     ProjectViewSet,
     ContributorViewSet,
@@ -40,6 +40,8 @@ urlpatterns = [
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/users/", CustomUserCreate.as_view(), name="user_create"),
+    path("api/users/me/", CustomUserUpdate.as_view(), name="user_update"),
+    path("api/users/me/delete/", CustomUserDelete.as_view(), name="user_delete"),
     path("api/projects/", ProjectViewSet.as_view({"get": "list", "post": "create"}), name="project_list"),
     path(
         "api/projects/<int:pk>/",
