@@ -7,10 +7,17 @@ from django.shortcuts import get_object_or_404
 
 class ContributorSerializer(serializers.ModelSerializer):
     project = serializers.StringRelatedField(many=True, read_only=True)
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
 
     class Meta:
         model = Contributor
         fields = ["id", "user", "project"]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Ajout du nom de l'utilisateur à la représentation
+        representation["user"] = instance.user.username  # ou instance.user.get_full_name()
+        return representation
 
 
 class ProjectSerializer(serializers.ModelSerializer):
