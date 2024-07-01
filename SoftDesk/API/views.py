@@ -54,6 +54,14 @@ class IssuesUpdateViewSet(viewsets.ModelViewSet):
     serializer_class = IssuesSerializerUpdate
     permission_classes = [IssuePermissionUpdate]
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"detail": "Issue supprimée avec succès."}, status=status.HTTP_204_NO_CONTENT)
+
+    def perform_destroy(self, instance):
+        instance.delete()
+
 
 class CommentsCreateViewSet(viewsets.ModelViewSet):
     queryset = Comments.objects.all()
@@ -69,3 +77,11 @@ class CommentsUpdateViewSet(viewsets.ModelViewSet):
     queryset = Comments.objects.all()
     serializer_class = CommentsSerializerUpdate
     permission_classes = [CommentPermissionUpdate]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"detail": "Commentaire supprimé avec succès."}, status=status.HTTP_204_NO_CONTENT)
+
+    def perform_destroy(self, instance):
+        instance.delete()
