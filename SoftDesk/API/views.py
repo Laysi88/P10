@@ -16,12 +16,22 @@ from API.permissions import (
     CommentPermissionCreate,
     CommentPermissionUpdate,
 )
+from rest_framework.response import Response
+from rest_framework import status
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [ProjectPermission]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"detail": "Projet supprimé avec succès."}, status=status.HTTP_204_NO_CONTENT)
+
+    def perform_destroy(self, instance):
+        instance.delete()
 
 
 class ContributorViewSet(viewsets.ModelViewSet):
